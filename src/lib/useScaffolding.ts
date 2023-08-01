@@ -15,12 +15,30 @@ const useStubsPath = usePackageStubsPath(
   "@deegital/laravel-trustup-io-dockerizer"
 );
 
+const useCancelSentence = () => useSentence("Scaffolding was cancelled ❌");
+
 const useScaffolding = () => {
   useSentence("Hi there 👋");
   useSentence("Let's scaffold a new laravel dockerization 🎉");
-  useSentence(
-    "Make sure your application is located in docker-integration projects folder"
+  const isCorrectlyLocated = useConfirm(
+    "Is your app located in docker integration projects folder ? "
   );
+
+  if (!isCorrectlyLocated) {
+    useCancelSentence();
+    useSentence("Move your app to docker-integration/projects first 🚚");
+    return;
+  }
+
+  const isSailInstalled = useConfirm("Is laravel sail installed in the app ?");
+
+  if (!isSailInstalled) {
+    useCancelSentence();
+    useSentence("Run 'composer require laravel/sail' first 🔧");
+    return;
+  }
+
+  useSentence("Great ! We can start working 👷");
 
   const folder = usePrompt("Folder location [.]", ".");
   const location = useCurrentPath(folder);
@@ -42,7 +60,7 @@ const useScaffolding = () => {
   const isConfirmed = useConfirm("Is it correct ? ");
 
   if (!isConfirmed) {
-    useSentence("Scaffolding was cancelled ❌");
+    useCancelSentence();
     useSentence("Come back when you're ready 😎");
     return;
   }
@@ -53,9 +71,10 @@ const useScaffolding = () => {
 
   useSentence("Successfully scaffolded dockerization 🎉");
   useSentence("Next steps :");
+  useSentence("- Go to your app folder");
   useSentence("- npx @deegital/laravel-trustup-io-deployment@latest");
   useSentence("- Push code to github and wait for actions completion");
-  useSentence("- Go to docker integration root directory");
+  useSentence("- Go to docker integration root folder");
   useSentence(
     `- ./cli bootstrap projects/${appKey} && ./cli start projects/${appKey}`
   );

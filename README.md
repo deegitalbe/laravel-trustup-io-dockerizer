@@ -1,13 +1,7 @@
 # laravel-trustup-io-dockerizer
-laravel-trustup-io-dockerizer
+Dockerize a laravel application with ease 😎
 
 ## Usage
-Move your app to docker integration `projects` folder
-Require sail in your app
-```shell
-composer require laravel/sail
-```
-Scaffold dockerization
 ```shell
 npx @deegital/laravel-trustup-io-dockerizer@latest
 ```
