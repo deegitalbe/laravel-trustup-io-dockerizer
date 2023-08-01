@@ -1,0 +1,86 @@
+# For more information: https://laravel.com/docs/sail
+version: '3'
+services:
+    {{{{appKey}}}}:
+        container_name: {{{{appKey}}}}
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.2
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: {{{{appKey}}}}-local
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-48080}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - applications
+            - {{{{appKey}}}}-sail
+        depends_on:
+            - {{{{appKey}}}}-mysql
+            - {{{{appKey}}}}-redis
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.{{{{appKey}}}}.tls=true
+            - traefik.http.routers.{{{{appKey}}}}.rule=Host("{{{{appKey}}}}.docker.localhost")
+    {{{{appKey}}}}-mysql:
+        container_name: {{{{appKey}}}}-mysql
+        image: 'mysql/mysql-server:8.0'
+        ports:
+            - '${FORWARD_DB_PORT:-43306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - '{{{{appKey}}}}-sail-mysql:/var/lib/mysql'
+            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+        networks:
+            - {{{{appKey}}}}-sail
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+    {{{{appKey}}}}-redis:
+        container_name: {{{{appKey}}}}-redis
+        image: 'redis:alpine'
+        ports:
+            - '${FORWARD_REDIS_PORT:-46379}:6379'
+        volumes:
+            - '{{{{appKey}}}}-sail-redis:/data'
+        networks:
+            - {{{{appKey}}}}-sail
+        healthcheck:
+            test:
+                - CMD
+                - redis-cli
+                - ping
+            retries: 3
+            timeout: 5s
+networks:
+    {{{{appKey}}}}-sail:
+        driver: bridge
+    applications:
+        name: applications
+        external: true
+volumes:
+    {{{{appKey}}}}-sail-mysql:
+        driver: local
+    {{{{appKey}}}}-sail-redis:
+        driver: local

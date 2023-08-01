@@ -1,0 +1,8 @@
+{
+   "editor.codeActionsOnSave": {
+     "source.fixAll": true
+  },
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "css.customData": ["./.vscode/css-data.json"]
+}

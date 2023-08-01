@@ -1,0 +1,42 @@
+#!/bin/bash
+cd ./scripts
+
+if [ "$1" == "bootstrap" ]
+    then 
+        ./bootstrap
+    exit 0
+fi
+
+if [ "$1" == "start" ]
+    then
+        ./start $2
+    exit 0
+fi
+
+if [ "$1" == "stop" ]
+    then 
+        ./stop
+    exit 0
+fi
+
+if [ "$1" == "restart" ]
+    then 
+        ./restart $2
+    exit 0
+fi
+
+if [ "$1" == "version" ]
+    then 
+        ./version $2
+    exit 0
+fi
+
+if [ "$1" == "publish" ]
+    then 
+        ./publish
+    exit 0
+fi
+
+./app $*
+
+cd ../
