@@ -34,7 +34,19 @@ const useScaffolding = () => {
 
   if (!isSailInstalled) {
     useCancelSentence();
-    useSentence("Run 'composer require laravel/sail' first 🔧");
+    useSentence("Install laravel sail first 🔧");
+    useSentence("See https://laravel.com/docs/sail#installation");
+    return;
+  }
+
+  const isHorizonInstalled = useConfirm(
+    "Is laravel horizon installed in the app ?"
+  );
+
+  if (!isHorizonInstalled) {
+    useCancelSentence();
+    useSentence("Install and publish horizon first 🔧");
+    useSentence("See https://laravel.com/docs/horizon#installation");
     return;
   }
 
