@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.0.2
+
+### Patch Changes
+
+- 2fb2270: Adding horizon requirement warning.
+
 ## 0.0.1
 
 ### Patch Changes
