@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.0.3
+
+### Patch Changes
+
+- cd30bac: Adding s3 filesystem requirement;
+
 ## 0.0.2
 
 ### Patch Changes
