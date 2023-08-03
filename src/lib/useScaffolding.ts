@@ -50,6 +50,17 @@ const useScaffolding = () => {
     return;
   }
 
+  const IsS3FilesystemConfigured = useConfirm(
+    "Is s3 filesystem configured in the app ?"
+  );
+
+  if (!IsS3FilesystemConfigured) {
+    useCancelSentence();
+    useSentence("Configure s3 filesystem first 🔧");
+    useSentence("See https://laravel.com/docs/filesystem#driver-prerequisites");
+    return;
+  }
+
   useSentence("Great ! We can start working 👷");
 
   const folder = usePrompt("Folder location [.]", ".");
