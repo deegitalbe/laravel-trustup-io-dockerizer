@@ -1,5 +1,12 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.0.4
+
+### Patch Changes
+
+- 008141a: Adding Service Provider Https forcing.
+- a235991: Adding migration primary key warning
+
 ## 0.0.3
 
 ### Patch Changes
