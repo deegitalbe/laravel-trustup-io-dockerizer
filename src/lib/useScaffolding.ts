@@ -30,6 +30,17 @@ const useScaffolding = () => {
     return;
   }
 
+  const areMigrationsContainingPrimaryKey = useConfirm(
+    "Do all migrations contain a primary key? ?"
+  );
+
+  if (!areMigrationsContainingPrimaryKey) {
+    useCancelSentence();
+    useSentence("Make sure each migration contains a primary key. 🔧");
+    useSentence("Usually just add '$table->id();'");
+    return;
+  }
+
   const isSailInstalled = useConfirm("Is laravel sail installed in the app ?");
 
   if (!isSailInstalled) {
