@@ -1,5 +1,16 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.1.0
+
+### Minor Changes
+
+- 7a8207b: Adding root script.
+
+### Patch Changes
+
+- 87348ba: Adding flare requirement.
+- 60fe12f: Setting environment variables when starting & building frontend dependencies during bootstrap.
+
 ## 0.0.4
 
 ### Patch Changes
