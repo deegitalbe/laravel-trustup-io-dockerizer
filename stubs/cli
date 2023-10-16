@@ -1,5 +1,22 @@
 #!/bin/bash
 
+if [ "$1" == "root" ]
+    then
+        script="$2"
+        folder=$(echo $PWD | sed -e 's/.\+\/projects\///g')
+        parameters=$folder
+        if [ $3 ]
+            then
+                parameters=${@:3}
+        fi
+
+        cd ../../
+        ./cli $script $parameters
+        cd $PWD
+    exit
+fi
+
+
 if [ "$1" == "bootstrap" ]
     then
         ./scripts/bootstrap.sh
