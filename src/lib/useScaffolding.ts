@@ -72,6 +72,19 @@ const useScaffolding = () => {
     return;
   }
 
+  const isFlareConfigured = useConfirm(
+    "Is our flare package installed in the app ?"
+  );
+
+  if (!isFlareConfigured) {
+    useCancelSentence();
+    useSentence("Install our flare package first 🔧");
+    useSentence(
+      "See https://github.com/henrotaym/laravel-flare-exception-handler/tree/3.x#readme"
+    );
+    return;
+  }
+
   useSentence("Great ! We can start working 👷");
 
   const folder = usePrompt("Folder location [.]", ".");
