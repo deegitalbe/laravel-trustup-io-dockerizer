@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.1.1
+
+### Patch Changes
+
+- 8bb11dc: Not starting image if build failed
+
 ## 0.1.0
 
 ### Minor Changes
