@@ -7,7 +7,7 @@ docker run --rm \
     -w /var/www/html \
     laravelsail/php82-composer:latest \
     composer install --ignore-platform-reqs && \
-./vendor/bin/sail build --no-cache
+./vendor/bin/sail build --no-cache && \
 ./cli start && \
 ./cli yarn install && \
 ./cli yarn build && \
