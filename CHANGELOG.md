@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-dockerizer
 
+## 0.1.2
+
+### Patch Changes
+
+- ca2897d: Adding a bit of description for installation.
+
 ## 0.1.1
 
 ### Patch Changes
