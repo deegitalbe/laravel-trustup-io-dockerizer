@@ -61,6 +61,22 @@ const useScaffolding = () => {
     return;
   }
 
+  const isHorizonHavingStagingConfig = useConfirm(
+    "Is laravel horizon config file (horizon.php) containing a 'staging' key?"
+  );
+
+  if (!isHorizonHavingStagingConfig) {
+    useCancelSentence();
+    useSentence(
+      "Add 'staging' key to you horizon config first (copy 'local' key values) 🔧"
+    );
+    useSentence(
+      "If you're lazy just copy/paste 'local' key and rename it 'staging' 🤫"
+    );
+    useSentence("See https://laravel.com/docs/horizon#environments");
+    return;
+  }
+
   const IsS3FilesystemConfigured = useConfirm(
     "Is s3 filesystem configured in the app ?"
   );
@@ -122,9 +138,7 @@ const useScaffolding = () => {
   useSentence("- npx @deegital/laravel-trustup-io-deployment@latest");
   useSentence("- Push code to github and wait for actions completion");
   useSentence("- Go to docker integration root folder");
-  useSentence(
-    `- ./cli bootstrap projects/${appKey} && ./cli start projects/${appKey}`
-  );
+  useSentence(`- ./cli root bootstrap && ./cli root start`);
   useSentence("You're good to go 🥳");
   useSentence(`Visit your app at https://${appKey}.docker.localhost`);
 };
