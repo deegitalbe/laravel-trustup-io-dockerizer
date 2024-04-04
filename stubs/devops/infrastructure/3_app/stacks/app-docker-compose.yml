@@ -43,7 +43,7 @@ services:
       - public
 
   fpm:
-    image: henrotaym/${APP_KEY}-fpm:${DOCKER_IMAGE_TAG}
+    image: {{{dockerhubOrganizationName}}}}/${APP_KEY}-fpm:${DOCKER_IMAGE_TAG}
     depends_on:
       - init
     networks:
@@ -63,7 +63,7 @@ services:
         failure_action: rollback
 
   web:
-    image: henrotaym/${APP_KEY}-web:${DOCKER_IMAGE_TAG}
+    image: {{{dockerhubOrganizationName}}}}/${APP_KEY}-web:${DOCKER_IMAGE_TAG}
     environment:
       FPM_HOST: "fpm:9000"
     networks:
@@ -89,7 +89,7 @@ services:
         failure_action: rollback
 
   cron:
-    image: henrotaym/${APP_KEY}-cron:${DOCKER_IMAGE_TAG}
+    image: {{{dockerhubOrganizationName}}}}/${APP_KEY}-cron:${DOCKER_IMAGE_TAG}
     networks:
       - internal
     volumes:
@@ -110,7 +110,7 @@ services:
           - node.role == manager
 
   queue:
-    image: henrotaym/${APP_KEY}-cli:${DOCKER_IMAGE_TAG}
+    image: {{{dockerhubOrganizationName}}}}/${APP_KEY}-cli:${DOCKER_IMAGE_TAG}
     command: ["php", "artisan", "horizon"]
     networks:
       - internal

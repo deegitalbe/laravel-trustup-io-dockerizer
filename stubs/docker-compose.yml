@@ -9,7 +9,9 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: cli
-        image: henrotaym/{{{{appKey}}}}-cli:local
+        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cli:local
+        ports:
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         volumes:
             - .:/opt/apps/app
         networks:
@@ -28,7 +30,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: fpm
-        image: henrotaym/{{{{appKey}}}}-fpm:local
+        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-fpm:local
         volumes:
             - .:/opt/apps/app
         networks:
@@ -44,7 +46,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: cron
-        image: henrotaym/{{{{appKey}}}}-cron:local
+        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cron:local
         volumes:
             - .:/opt/apps/app
         networks:
@@ -59,10 +61,9 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: web
-        image: henrotaym/{{{{appKey}}}}-web:local
+        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-web:local
         ports:
             - "${APP_PORT:-48080}:80"
-            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
             FPM_HOST: "{{{{appKey}}}}-fpm:9000"
         networks:

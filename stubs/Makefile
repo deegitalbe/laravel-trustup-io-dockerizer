@@ -6,7 +6,7 @@
 # To push to a specific registry,
 # you can use the REGISTRY as an arg of the docker build command (e.g make docker REGISTRY=my_registry.com/username)
 # You may also change the default value if you are using a different registry as a defaultt
-REGISTRY ?= {{{{dockerhubOrganizationName}}}}
+REGISTRY ?= {{{dockerhubOrganizationName}}}}
 
 # PROJECT defines suffix for images built & stored to docker hub.
 PROJECT ?= {{{{appKey}}}}
@@ -14,37 +14,30 @@ PROJECT ?= {{{{appKey}}}}
 # Commands
 deploy: docker-build docker-push
 
-docker-build-cli: guard-VERSION
-	docker build -f Dockerfile.production . --target cli -t ${REGISTRY}/${PROJECT}-cli:${VERSION} \
-	&& echo "cli built"
+docker-build: guard-VERSION guard-ENV guard-USER_ID guard-GROUP_ID guard-TARGET
+	docker build \
+		--file Dockerfile.${ENV} \
+		--target ${TARGET} \
+		--tag ${REGISTRY}/${PROJECT}-${TARGET}:${VERSION} \
+		--build-arg UID=${USER_ID} \
+		--build-arg GID=${GROUP_ID} \
+		. && \
+	echo "${TARGET} built."
 
-docker-build-cron: guard-VERSION
-	docker build -f Dockerfile.production . --target cron -t ${REGISTRY}/${PROJECT}-cron:${VERSION} \
-	&& echo "cron built"
+each: guard-SCRIPT
+	TARGET=cli make ${SCRIPT} && \
+	TARGET=fpm make ${SCRIPT} && \
+	TARGET=web make ${SCRIPT} && \
+	TARGET=cron make ${SCRIPT}
 
-docker-build-fpm: guard-VERSION
-	docker build -f Dockerfile.production . --target fpm_server -t ${REGISTRY}/${PROJECT}-fpm:${VERSION} \
-	&& echo "fpm built"
-
-docker-build-web: guard-VERSION
-	docker build -f Dockerfile.production . --target web_server -t ${REGISTRY}/${PROJECT}-web:${VERSION} \
-	&& echo "web built"
-
-docker-build: guard-VERSION
-	docker build -f Dockerfile.production . --target cli -t ${REGISTRY}/${PROJECT}-cli:${VERSION} & \
-	docker build -f Dockerfile.production . --target cron -t ${REGISTRY}/${PROJECT}-cron:${VERSION} & \
-	docker build -f Dockerfile.production . --target fpm_server -t ${REGISTRY}/${PROJECT}-fpm:${VERSION} & \
-	docker build -f Dockerfile.production . --target web_server -t ${REGISTRY}/${PROJECT}-web:${VERSION} & \
-	wait
-	echo "Images were successfully built."
+build: guard-VERSION
+	SCRIPT=docker-build make each
  
-docker-push: guard-VERSION
-	docker push ${REGISTRY}/${PROJECT}-cli:${VERSION} & \
-	docker push ${REGISTRY}/${PROJECT}-cron:${VERSION} & \
-	docker push ${REGISTRY}/${PROJECT}-fpm:${VERSION} & \
-	docker push ${REGISTRY}/${PROJECT}-web:${VERSION} & \
-	wait
-	echo "Images were successfully pushed."
+docker-push: guard-VERSION guard-TARGET
+	docker push ${REGISTRY}/${PROJECT}-${TARGET}:${VERSION}
+
+push: guard-VERSION
+	SCRIPT=docker-push make each
 
 guard-%:
 	@ if [ "${${*}}" = "" ]; then \
