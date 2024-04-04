@@ -5,7 +5,7 @@ Scaffolding deployments folder for our laravel projects
 ## Usage
 
 ```shell
-npx @deegital/laravel-trustup-io-deployment@latest
+npx @deegital/laravel-trustup-io-dockerizer@latest
 ```
 
 ## Development
