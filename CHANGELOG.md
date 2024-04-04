@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-deployment
 
+## 1.0.1
+
+### Patch Changes
+
+- 0e728be: Fixing vite config and makefile.
+
 ## 1.0.0
 
 ### Major Changes
