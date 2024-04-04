@@ -1,0 +1,93 @@
+# ----------------------------------------
+
+# Application builder
+FROM henrotaym/trustup-io-base-builder:0.0.1 as builder
+
+# Set current user
+USER www-data
+
+# Set working directory
+WORKDIR /opt/apps/app
+
+# Copy composer install required files
+COPY --chown=www-data composer.json composer.lock ./
+
+# Install composer dependencies without any script or autoload
+RUN composer install --no-scripts --no-autoloader --prefer-dist --no-dev
+
+# Copy pnpm install required files
+COPY --chown=www-data package.json pnpm-lock.yaml ./
+
+# Install pnpm dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy codebase
+COPY --chown=www-data . .
+
+# Build public folder and generate production node_modules
+RUN pnpm run build && \
+    pnpm install --frozen-lockfile --prod
+
+# Install composer dependencies
+RUN composer install --prefer-dist --no-dev
+
+# ----------------------------------------
+
+# Application CLI
+FROM henrotaym/trustup-io-base-cli:0.0.1 as cli
+
+# Set current user
+USER www-data
+
+# Set working directory
+WORKDIR /opt/apps/app
+
+# Copy application from builder
+COPY --from=builder --chown=www-data /opt/apps/app .
+
+# ----------------------------------------
+
+# Application FPM
+FROM henrotaym/trustup-io-base-fpm:0.0.1 as fpm
+
+# Set current user
+USER www-data
+
+# Set working directory
+WORKDIR /opt/apps/app
+
+# Copy application from builder
+COPY --from=builder --chown=www-data /opt/apps/app .
+
+# ----------------------------------------
+
+# Application web server
+FROM henrotaym/trustup-io-base-web:0.0.1 as web
+
+# Set working directory
+WORKDIR /opt/apps/app
+
+# Copy public folder from builder
+COPY --from=builder /opt/apps/app/public ./public
+
+# ----------------------------------------
+
+# Application CRON
+FROM cli as cron
+
+# Current user
+USER root
+
+# Copy crontabs
+COPY --from=henrotaym/trustup-io-base-cron:0.0.1  /var/spool/cron/crontabs /var/spool/cron/crontabs
+
+# Copy cron entrypoint
+COPY --from=henrotaym/trustup-io-base-cron:0.0.1  /usr/local/bin/start-container /usr/local/bin/start-container
+
+# Execute CRON task
+ENTRYPOINT [ "start-container" ]
+
+# ----------------------------------------
+
+# Default stage when none given
+FROM cli

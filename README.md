@@ -1,12 +1,15 @@
-# laravel-trustup-io-dockerizer
-Dockerize a laravel application with ease 😎
+# laravel-trustup-io-deployment
+
+Scaffolding deployments folder for our laravel projects
 
 ## Usage
+
 ```shell
-npx @deegital/laravel-trustup-io-dockerizer@latest
+npx @deegital/laravel-trustup-io-deployment@latest
 ```
 
 ## Development
+
 ```shell
 ./cli bootstrap #bootstrap project
 ./cli yarn install #install dependencies

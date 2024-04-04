@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-const { useScaffolding } = require("../dist");
+const { useDeploy } = require("../dist");
 
-useScaffolding();
+useDeploy();

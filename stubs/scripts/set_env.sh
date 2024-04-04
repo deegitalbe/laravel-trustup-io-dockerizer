@@ -1,15 +1,20 @@
 #!/bin/bash
 
+secret() {
+  doppler secrets download \
+      --project "$1" \
+      --config local \
+      --no-file \
+      --format env | grep -Ev 'DOPPLER|NUXT' \
+    >> .env
+}
+
+append() {
+  echo $1=\"$2\" >> .env
+}
+
 true > .env && \
-doppler secrets download \
-  --project "trustup-io-app-commons" \
-  --config local \
-  --no-file \
-  --format env | grep -v '^DOPPLER_' \
-  >> .env && \
-doppler secrets download \
-  --project "{{{{appKey}}}}" \
-  --config local \
-  --no-file \
-  --format env | grep -v '^DOPPLER_' \
-  >> .env
+secret "trustup-io-app-commons" && \
+secret "{{{{appKey}}}}" && \
+append UID $(id -u) && \
+append GID $(id -g)

@@ -1,10 +1,20 @@
-version: '3'
 services:
   app:
     build:
       context: .
       target: runner
+    image: henrotaym/laravel-trustup-io-deployment-runner:local
     volumes:
-      - ./:/app
+      - ./:/opt/apps/app
     ports:
       - ${VITE_PORT:-8000}:${VITE_PORT:-8000}
+
+  cli:
+    build:
+      context: .
+      target: cli
+    image: henrotaym/laravel-trustup-io-deployment-cli:local
+    volumes:
+      - ./:/opt/apps/app
+    profiles:
+      - cli

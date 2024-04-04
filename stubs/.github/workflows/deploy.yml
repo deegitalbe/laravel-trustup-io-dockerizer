@@ -1,0 +1,204 @@
+name: "Deploy"
+
+on:
+  push:
+    branches:
+      - main
+      - release/v**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  CI:
+    name: "Continuous Integration"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Prepare terraform variables
+        id: prepare_variables
+        uses: henrotaym/prepare-terraform-variables-action@v3
+        with:
+          app_key: ${{ github.event.repository.name }}
+          github_branch: ${{ github.ref }}
+      - name: Retrieve slack users
+        id: slack_users
+        uses: deegitalbe/github-action-trustup-io-slack-users@v1
+        with:
+          username: ${{ github.triggering_actor }}
+      - name: Notify progress
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: TrustUp.IO
+          SLACK_ICON: "https://avatars.slack-edge.com/2022-11-24/4423352230964_495f6791123bff9ca3ef_512.png"
+          SLACK_TITLE: "${{ steps.prepare_variables.outputs.trustup_app_key }} (${{ steps.prepare_variables.outputs.app_environment }})"
+          SLACK_MESSAGE: ":construction: Deployment in progress\n${{ steps.slack_users.outputs.user_mention }}\n${{ github.event.head_commit.message }}\n<https://${{ steps.prepare_variables.outputs.APP_URL }}|See application>"
+          SLACK_COLOR: "#F7BE0B"
+          SLACK_FOOTER: "Powered by automated github action"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push builder image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          target: builder
+          push: true
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-builder:${{ github.sha }}"
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-builder:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-builder:buildcache,mode=max
+      - name: Build and push cli image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          target: cli
+          push: true
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-cli:${{ github.sha }}"
+      - name: Build and push cron image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          target: cron
+          push: true
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-cron:${{ github.sha }}"
+      - name: Build and push fpm image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          target: fpm
+          push: true
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-fpm:${{ github.sha }}"
+      - name: Build and push web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          target: web
+          push: true
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.prepare_variables.outputs.trustup_app_key }}-web:${{ github.sha }}"
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ^1.7
+      - name: Terraform init main environment
+        working-directory: ./devops/infrastructure/1_main_environments
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+        run: |
+          terraform init \
+            -backend-config="access_key=${{ secrets.DIGITALOCEAN_SPACES_ACCESS_KEY_ID }}" \
+            -backend-config="secret_key=${{ secrets.DIGITALOCEAN_SPACES_SECRET_ACCESS_KEY }}" \
+            -backend-config="bucket=${{ secrets.DIGITALOCEAN_SPACES_TERRAFORM_STATES_BUCKET }}" \
+            -backend-config="key=${{ steps.prepare_variables.outputs.trustup_app_key }}-environments-main.tfstate"
+      - name: Terraform apply main environment
+        working-directory: ./devops/infrastructure/1_main_environments
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+        run: terraform apply -auto-approve
+      - name: Terraform init dev environment
+        working-directory: ./devops/infrastructure/2_dev_environments
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+          TF_VAR_DEV_ENVIRONMENT_TO_ADD: "${{ steps.prepare_variables.outputs.dev_environment_to_deploy }}"
+        run: |
+          terraform init \
+            -backend-config="access_key=${{ secrets.DIGITALOCEAN_SPACES_ACCESS_KEY_ID }}" \
+            -backend-config="secret_key=${{ secrets.DIGITALOCEAN_SPACES_SECRET_ACCESS_KEY }}" \
+            -backend-config="bucket=${{ secrets.DIGITALOCEAN_SPACES_TERRAFORM_STATES_BUCKET }}" \
+            -backend-config="key=${{ steps.prepare_variables.outputs.trustup_app_key }}-environments-dev.tfstate"
+      - name: Terraform apply dev environment
+        working-directory: ./devops/infrastructure/2_dev_environments
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+          TF_VAR_DEV_ENVIRONMENT_TO_ADD: "${{ steps.prepare_variables.outputs.dev_environment_to_deploy }}"
+          TF_VAR_DEV_ENVIRONMENT_TO_REMOVE: "${{ steps.prepare_variables.outputs.dev_environment_to_remove }}"
+        run: terraform apply -auto-approve
+      - name: Terraform init app
+        working-directory: ./devops/infrastructure/3_app
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+          TF_VAR_TRUSTUP_APP_KEY_SUFFIX: "${{ steps.prepare_variables.outputs.trustup_app_key_suffix }}"
+          TF_VAR_TRUSTUP_APP_KEY_SUFFIXED: "${{ steps.prepare_variables.outputs.trustup_app_key_suffixed }}"
+          TF_VAR_DOCKER_IMAGE_TAG: "${{ github.sha }}"
+          TF_VAR_APP_URL: "${{ steps.prepare_variables.outputs.app_url }}"
+          TF_VAR_BUCKET_URL: "${{ steps.prepare_variables.outputs.bucket_url }}"
+          TF_VAR_APP_ENVIRONMENT: "${{ steps.prepare_variables.outputs.app_environment }}"
+          TF_VAR_CLOUDFLARE_ZONE_SECRET: "${{ steps.prepare_variables.outputs.cloudflare_zone_secret }}"
+        run: |
+          terraform init \
+            -backend-config="access_key=${{ secrets.DIGITALOCEAN_SPACES_ACCESS_KEY_ID }}" \
+            -backend-config="secret_key=${{ secrets.DIGITALOCEAN_SPACES_SECRET_ACCESS_KEY }}" \
+            -backend-config="bucket=${{ secrets.DIGITALOCEAN_SPACES_TERRAFORM_STATES_BUCKET }}" \
+            -backend-config="key=${{ steps.prepare_variables.outputs.trustup_app_key_suffixed }}-app.tfstate"
+      - name: Terraform apply app
+        id: terraform_app_apply
+        working-directory: ./devops/infrastructure/3_app
+        env:
+          TF_VAR_DOPPLER_ACCESS_TOKEN_USER: "${{ secrets.DOPPLER_ACCESS_TOKEN_USER }}"
+          TF_VAR_TRUSTUP_APP_KEY: "${{ steps.prepare_variables.outputs.trustup_app_key }}"
+          TF_VAR_TRUSTUP_APP_KEY_SUFFIX: "${{ steps.prepare_variables.outputs.trustup_app_key_suffix }}"
+          TF_VAR_TRUSTUP_APP_KEY_SUFFIXED: "${{ steps.prepare_variables.outputs.trustup_app_key_suffixed }}"
+          TF_VAR_DOCKER_IMAGE_TAG: "${{ github.sha }}"
+          TF_VAR_APP_URL: "${{ steps.prepare_variables.outputs.app_url }}"
+          TF_VAR_BUCKET_URL: "${{ steps.prepare_variables.outputs.bucket_url }}"
+          TF_VAR_APP_ENVIRONMENT: "${{ steps.prepare_variables.outputs.app_environment }}"
+          TF_VAR_CLOUDFLARE_ZONE_SECRET: "${{ steps.prepare_variables.outputs.cloudflare_zone_secret }}"
+        run: terraform apply -auto-approve
+      - name: Notify failure
+        if: ${{ failure() }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: TrustUp.IO
+          SLACK_ICON: "https://avatars.slack-edge.com/2022-11-24/4423352230964_495f6791123bff9ca3ef_512.png"
+          SLACK_TITLE: "${{ steps.prepare_variables.outputs.trustup_app_key }} (${{ steps.prepare_variables.outputs.app_environment }})"
+          SLACK_MESSAGE: ":rotating_light: Deployment failed\nAdversity leads to greatness :male_mage:\n${{ steps.slack_users.outputs.user_mention }}\n${{ github.event.head_commit.message }}\n<https://${{ steps.prepare_variables.outputs.app_url }}|See application>"
+          SLACK_COLOR: "#F8312F"
+          SLACK_FOOTER: "Powered by automated github action"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+      - name: Notify cancellation
+        if: ${{ cancelled() }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: TrustUp.IO
+          SLACK_ICON: "https://avatars.slack-edge.com/2022-11-24/4423352230964_495f6791123bff9ca3ef_512.png"
+          SLACK_TITLE: "${{ steps.prepare_variables.outputs.trustup_app_key }} (${{ steps.prepare_variables.outputs.app_environment }})"
+          SLACK_MESSAGE: ":man-gesturing-no: Deployment cancelled\n${{ steps.slack_users.outputs.user_mention }}\n${{ github.event.head_commit.message }}\n<https://${{ steps.prepare_variables.outputs.app_url }}|See application>"
+          SLACK_COLOR: "#d1d5db"
+          SLACK_FOOTER: "Powered by automated github action"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+      - name: Notify success
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: TrustUp.IO
+          SLACK_ICON: "https://avatars.slack-edge.com/2022-11-24/4423352230964_495f6791123bff9ca3ef_512.png"
+          SLACK_TITLE: "${{ steps.prepare_variables.outputs.trustup_app_key }} (${{ steps.prepare_variables.outputs.app_environment }})"
+          SLACK_MESSAGE: ":rocket: Deployment succeeded\n${{ steps.slack_users.outputs.user_mention }}\n${{ github.event.head_commit.message }}\n<https://${{ steps.prepare_variables.outputs.app_url }}|See application>"
+          SLACK_FOOTER: "Powered by automated github action"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Configure bucket DNS
+        run: |
+          set +e
+          doctl compute cdn create ${{ steps.prepare_variables.outputs.trustup_app_key_suffixed }}.ams3.digitaloceanspaces.com --domain=${{ steps.prepare_variables.outputs.bucket_url }} --certificate-id=needs-cloudflare-cert &> /dev/null
+          echo Bucket DNS configured

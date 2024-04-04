@@ -10,7 +10,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+playground
 *.local
+!Dockerfile.local
 
 # Editor directories and files
 .idea
@@ -21,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-playground
+/playground
+/.env
+/.pnpm-store

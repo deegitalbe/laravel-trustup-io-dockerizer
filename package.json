@@ -25,9 +25,9 @@
     "dev": "vite",
     "lint": "tsc && eslint . --fix",
     "format": "prettier --write \"src/**/*\"",
-    "validate": "yarn lint && yarn format",
+    "validate": "pnpm lint && pnpm format",
     "build": "tsup",
-    "release": "yarn build && changeset publish",
+    "release": "pnpm build && changeset publish",
     "test": "vitest"
   },
   "repository": {

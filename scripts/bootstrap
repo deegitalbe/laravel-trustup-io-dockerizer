@@ -1,13 +1,5 @@
 #!/bin/bash
-cd ../
 
-docker run \
-  -it \
-  --rm \
-  --user node:node \
-  -v "$PWD":/usr/src/app \
-  -w /usr/src/app node:16-alpine \
-  yarn install && \
-docker-compose build --no-cache
-
-cd scripts
+./scripts/set_env && \
+VERSION=local USER_ID=$(id -u) GROUP_ID=$(id -g) make build && \
+./cli pnpm install

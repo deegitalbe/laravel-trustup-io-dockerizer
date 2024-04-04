@@ -1,0 +1,5 @@
+node_modules
+dist
+docker-compose.production.yml
+/.pnpm-store
+/stubs/docker-compose.yml

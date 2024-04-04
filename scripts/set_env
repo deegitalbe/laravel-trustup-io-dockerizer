@@ -1,0 +1,10 @@
+#!/bin/bash
+
+append() {
+  echo $1=\"$2\" >> .env
+}
+
+true > .env && \
+append VITE_PORT 8000 && \
+append UID $(id -u) && \
+append GID $(id -g)
