@@ -20,7 +20,7 @@ resource "ssh_resource" "copy_container_storage_to_distributed_storage" {
         --rm \
         --mount type=bind,source=${local.app_folder}/.env,target=/opt/apps/app/.env \
         --mount type=bind,source=${local.storage_folder},target=/mnt/storage \
-        {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
+        {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
         cp -a /opt/apps/app/storage /mnt/storage
     EOT
   ]
@@ -113,7 +113,7 @@ resource "ssh_resource" "deploy_app_fpm" {
     <<-EOT
       docker service update \
         --force \
-        --image {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-fpm:${var.DOCKER_IMAGE_TAG} \
+        --image {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-fpm:${var.DOCKER_IMAGE_TAG} \
         --replicas ${local.fpm_replicas} \
         app_fpm
     EOT
@@ -137,7 +137,7 @@ resource "ssh_resource" "deploy_app_queue" {
     <<-EOT
       docker service update \
         --force \
-        --image {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
+        --image {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
         --replicas ${local.queue_replicas} \
         app_queue
     EOT
@@ -161,7 +161,7 @@ resource "ssh_resource" "deploy_app_cron" {
     <<-EOT
       docker service update \
         --force \
-        --image {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cron:${var.DOCKER_IMAGE_TAG} \
+        --image {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cron:${var.DOCKER_IMAGE_TAG} \
         --replicas ${local.cron_replicas} \
         app_cron
     EOT
@@ -184,7 +184,7 @@ resource "ssh_resource" "deploy_app_web" {
     <<-EOT
       docker service update \
         --force \
-        --image {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-web:${var.DOCKER_IMAGE_TAG} \
+        --image {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-web:${var.DOCKER_IMAGE_TAG} \
         --replicas ${local.web_replicas} \
         app_web
     EOT
@@ -213,7 +213,7 @@ resource "ssh_resource" "migrate_database" {
         --rm \
         --mount type=bind,source=${local.app_folder}/.env,target=/opt/apps/app/.env \
         --mount type=bind,source=${local.storage_folder}/storage,target=/opt/apps/app/storage \
-        {{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
+        {{{{dockerhubOrganizationName}}}}/${var.TRUSTUP_APP_KEY}-cli:${var.DOCKER_IMAGE_TAG} \
         php artisan migrate --force
     EOT
   ]

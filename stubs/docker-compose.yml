@@ -9,7 +9,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: cli
-        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cli:local
+        image: {{{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cli:local
         ports:
             - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         volumes:
@@ -30,7 +30,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: fpm
-        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-fpm:local
+        image: {{{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-fpm:local
         volumes:
             - .:/opt/apps/app
         networks:
@@ -46,7 +46,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: cron
-        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cron:local
+        image: {{{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cron:local
         volumes:
             - .:/opt/apps/app
         networks:
@@ -61,7 +61,7 @@ services:
             context: .
             dockerfile: ./Dockerfile.local
             target: web
-        image: {{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-web:local
+        image: {{{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-web:local
         ports:
             - "${APP_PORT:-48080}:80"
         environment:

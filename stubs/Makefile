@@ -6,7 +6,7 @@
 # To push to a specific registry,
 # you can use the REGISTRY as an arg of the docker build command (e.g make docker REGISTRY=my_registry.com/username)
 # You may also change the default value if you are using a different registry as a defaultt
-REGISTRY ?= {{{dockerhubOrganizationName}}}}
+REGISTRY ?= {{{{dockerhubOrganizationName}}}}
 
 # PROJECT defines suffix for images built & stored to docker hub.
 PROJECT ?= {{{{appKey}}}}
