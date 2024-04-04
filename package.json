@@ -1,6 +1,6 @@
 {
   "name": "@deegital/laravel-trustup-io-dockerizer",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "laravel-trustup-io-dockerizer",
   "files": [
     "dist",

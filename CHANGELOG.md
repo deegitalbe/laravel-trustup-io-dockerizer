@@ -1,5 +1,15 @@
 # @deegital/laravel-trustup-io-deployment
 
+## 1.0.0
+
+### Major Changes
+
+- 26a2c2e: Single package for laravel dockerization/deployment.
+
+### Patch Changes
+
+- 461d4ef: Installing dependencies correctly for stubs.
+
 ## 1.4.3
 
 ### Patch Changes
