@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-deployment
 
+## 1.0.2
+
+### Patch Changes
+
+- 9407c4a: Missing moustache for template interpolation.
+
 ## 1.0.1
 
 ### Patch Changes
