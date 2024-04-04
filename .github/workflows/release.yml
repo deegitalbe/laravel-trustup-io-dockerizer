@@ -23,6 +23,10 @@ jobs:
         with:
           version: 8
 
+      - name: Install Dependencies
+        run: |
+          pnpm install --frozen-lockfile
+
       - name: Create Release Pull Request
         uses: changesets/action@v1
         with:
