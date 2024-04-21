@@ -41,7 +41,7 @@ const useScaffolding = () => {
     "deegitalbe"
   );
   const dockerhubOrganizationName = usePrompt(
-    "Github organization [henrotaym]",
+    "Dockerhub organization [henrotaym]",
     "henrotaym"
   );
 
@@ -68,24 +68,31 @@ const useScaffolding = () => {
 
   useSentence("Successfully scaffolded dockerization 🎉");
   useSentence("Next steps :");
-  useSentence(
-    "- Push you code and wait for github actions completion (Deploy could fail, it's expected). 🔧"
-  );
+  useSentence("- Push you code and wait for github actions completion. 🔧");
   useSentence("- Make sure each migration contains a primary key. 🔧");
   useSentence(
-    "- Install and publish horizon (https://laravel.com/docs/horizon#installation) 🔧"
+    "- Install and publish horizon (https://laravel.com/docs/horizon#installation). 🔧"
   );
   useSentence(
-    "- Add 'staging' key to you horizon.php config (copy 'production' key values) 🔧"
+    "- Add 'staging' key to you horizon.php config (copy 'production' key values). 🔧"
   );
   useSentence(
-    "- Configure s3 filesystem (https://laravel.com/docs/filesystem#driver-prerequisites) 🔧"
+    "- Configure s3 filesystem (https://laravel.com/docs/filesystem#driver-prerequisites). 🔧"
   );
   useSentence(
-    "- Install our flare package (https://github.com/henrotaym/laravel-flare-exception-handler/tree/3.x#readme) 🔧"
+    "- Install our flare package (https://github.com/henrotaym/laravel-flare-exception-handler/tree/3.x#readme). 🔧"
   );
-  useSentence(`- ./cli root bootstrap && ./cli root start`);
+  useSentence(
+    "- Install laravel pint package (https://laravel.com/docs/11.x/pint#installation). 🔧"
+  );
+  useSentence(
+    "- Install larastan package (https://github.com/larastan/larastan?tab=readme-ov-file#-getting-started-in-3-steps). 🔧"
+  );
+  useSentence(
+    "- Install laraguide vscode extension (https://marketplace.visualstudio.com/items?itemName=henrotaym.laraguide). 🔧"
+  );
   useSentence("You're good to go 🥳");
+  useSentence(`- ./cli root bootstrap && ./cli root start`);
   useSentence(`Visit your app at https://${appKey}.docker.localhost`);
 };
 

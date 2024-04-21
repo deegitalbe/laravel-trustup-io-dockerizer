@@ -11,7 +11,7 @@ services:
             target: cli
         image: {{{{dockerhubOrganizationName}}}}/{{{{appKey}}}}-cli:local
         ports:
-            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+            - ${VITE_PORT:-5173}:${VITE_PORT:-5173}
         volumes:
             - .:/opt/apps/app
         networks:

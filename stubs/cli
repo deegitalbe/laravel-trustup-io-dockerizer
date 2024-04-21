@@ -1,6 +1,12 @@
 #!/bin/bash
 
 run() {
+    docker compose run --rm \
+        {{{{appKey}}}}-cli \
+        "$@"
+}
+
+runWithPorts() {
     docker compose run --rm --service-ports \
         {{{{appKey}}}}-cli \
         "$@"
@@ -68,6 +74,24 @@ fi
 if [ "$1" == "testg" ]
     then
         ./cli test --group="'${*:2}'"
+    exit
+fi
+
+if [ "$1" == "format" ]
+    then
+        ./cli ./vendor/bin/pint ${@:2}
+    exit
+fi
+
+if [ "$1" == "analyze" ]
+    then
+        ./cli ./vendor/bin/phpstan analyse ${@:2}
+    exit
+fi
+
+if [ "${*:2}" == "run dev" ]
+    then
+        runWithPorts $@
     exit
 fi
 

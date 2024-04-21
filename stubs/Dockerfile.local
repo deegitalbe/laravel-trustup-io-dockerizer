@@ -26,17 +26,17 @@ COPY --chown=www-data composer.* ./
 # Install composer dependencies without any script or autoload
 RUN composer install --no-scripts --no-autoloader --prefer-dist
 
-# Copy pnpm install required files
-COPY --chown=www-data package.json pnpm-lock*.yaml ./
+# Copy bun install required files
+COPY --chown=www-data package.json bun*.lockb ./
 
-# Install pnpm dependencies
-RUN pnpm install
+# Install bun dependencies
+RUN bun install
 
 # Copy codebase
 COPY --chown=www-data . .
 
 # Build public folder
-RUN pnpm run build
+RUN bun run build
 
 # Install composer dependencies
 RUN composer install --prefer-dist

@@ -4,16 +4,24 @@ Scaffolding deployments folder for our laravel projects
 
 ## Usage
 
+### Fresh laravel application
+
+Inside your `projects` folder
+
 ```shell
-npx @deegital/laravel-trustup-io-dockerizer@latest
+docker run --rm \
+    --interactive \
+    --tty \
+    --volume $PWD:/opt/apps/app \
+    --workdir /opt/apps/app \
+    --user $(id -u):$(id -g) \
+    henrotaym/laravel-installer:latest
 ```
 
-## Development
+### Dockerize application
+
+Inside your app folder
 
 ```shell
-./cli bootstrap #bootstrap project
-./cli yarn install #install dependencies
-./cli start #start project
-./cli stop #stop project
-./cli restart  #restart project
+npx @deegital/laravel-trustup-io-dockerizer@latest
 ```

@@ -1,7 +1,18 @@
 # ----------------------------------------
 
-# Application builder
-FROM henrotaym/trustup-io-base-builder:0.0.1 as builder
+# Application CLI
+FROM henrotaym/trustup-io-base-builder:0 as builder
+
+# Set current user
+USER root
+
+# Host user data
+ARG UID=1000
+ARG GID=1000
+
+# Match host user to avoid volumes permission issues
+RUN usermod  --uid ${UID} www-data && \
+    groupmod --gid ${GID} www-data
 
 # Set current user
 USER www-data
@@ -10,31 +21,43 @@ USER www-data
 WORKDIR /opt/apps/app
 
 # Copy composer install required files
-COPY --chown=www-data composer.json composer.lock ./
+COPY --chown=www-data composer.* ./
 
 # Install composer dependencies without any script or autoload
-RUN composer install --no-scripts --no-autoloader --prefer-dist --no-dev
+RUN composer install --no-scripts --no-autoloader --no-dev --prefer-dist
 
-# Copy pnpm install required files
-COPY --chown=www-data package.json pnpm-lock.yaml ./
+# Copy bun install required files
+COPY --chown=www-data package.json bun.lockb ./
 
-# Install pnpm dependencies
-RUN pnpm install --frozen-lockfile
+# Install bun dependencies
+RUN bun install --frozen-lockfile
 
 # Copy codebase
 COPY --chown=www-data . .
 
-# Build public folder and generate production node_modules
-RUN pnpm run build && \
-    pnpm install --frozen-lockfile --prod
+# Build assets
+RUN bun run build
+
+# Install bun dependencies
+RUN bun install --production --frozen-lockfile
 
 # Install composer dependencies
-RUN composer install --prefer-dist --no-dev
+RUN composer install --no-dev --prefer-dist
 
 # ----------------------------------------
 
-# Application CLI
-FROM henrotaym/trustup-io-base-cli:0.0.1 as cli
+FROM henrotaym/trustup-io-base-cli:0 as cli
+
+# Set current user
+USER root
+
+# Host user data
+ARG UID=1000
+ARG GID=1000
+
+# Match host user to avoid volumes permission issues
+RUN usermod  --uid ${UID} www-data && \
+    groupmod --gid ${GID} www-data
 
 # Set current user
 USER www-data
@@ -42,13 +65,23 @@ USER www-data
 # Set working directory
 WORKDIR /opt/apps/app
 
-# Copy application from builder
-COPY --from=builder --chown=www-data /opt/apps/app .
+COPY --from=builder --chown=www-data /opt/apps/app ./
 
 # ----------------------------------------
 
 # Application FPM
-FROM henrotaym/trustup-io-base-fpm:0.0.1 as fpm
+FROM henrotaym/trustup-io-base-fpm:0 as fpm
+
+# Set current user
+USER root
+
+# Host user data
+ARG UID=1000
+ARG GID=1000
+
+# Match host user to avoid volumes permission issues
+RUN usermod  --uid ${UID} www-data && \
+    groupmod --gid ${GID} www-data
 
 # Set current user
 USER www-data
@@ -56,19 +89,19 @@ USER www-data
 # Set working directory
 WORKDIR /opt/apps/app
 
-# Copy application from builder
-COPY --from=builder --chown=www-data /opt/apps/app .
+# Copy codebase from cli
+COPY --from=cli --chown=www-data /opt/apps/app ./
 
 # ----------------------------------------
 
 # Application web server
-FROM henrotaym/trustup-io-base-web:0.0.1 as web
+FROM henrotaym/trustup-io-base-web:0 as web
 
 # Set working directory
 WORKDIR /opt/apps/app
 
-# Copy public folder from builder
-COPY --from=builder /opt/apps/app/public ./public
+# Copy public folder from CLI
+COPY --from=cli /opt/apps/app/public ./public
 
 # ----------------------------------------
 
@@ -79,15 +112,14 @@ FROM cli as cron
 USER root
 
 # Copy crontabs
-COPY --from=henrotaym/trustup-io-base-cron:0.0.1  /var/spool/cron/crontabs /var/spool/cron/crontabs
+COPY --from=henrotaym/trustup-io-base-cron:0  /var/spool/cron/crontabs/www-data /var/spool/cron/crontabs/www-data
 
 # Copy cron entrypoint
-COPY --from=henrotaym/trustup-io-base-cron:0.0.1  /usr/local/bin/start-container /usr/local/bin/start-container
+COPY --from=henrotaym/trustup-io-base-cron:0  /usr/local/bin/start-container /usr/local/bin/start-container
 
 # Execute CRON task
 ENTRYPOINT [ "start-container" ]
 
 # ----------------------------------------
-
 # Default stage when none given
 FROM cli
