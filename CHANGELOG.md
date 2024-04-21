@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-deployment
 
+## 1.0.3
+
+### Patch Changes
+
+- 1a32b21: Using bun/pint/larastan.
+
 ## 1.0.2
 
 ### Patch Changes
