@@ -1,5 +1,11 @@
 # @deegital/laravel-trustup-io-deployment
 
+## 1.0.4
+
+### Patch Changes
+
+- 3d19430: Using lefthook.
+
 ## 1.0.3
 
 ### Patch Changes
