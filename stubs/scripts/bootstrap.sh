@@ -6,6 +6,7 @@ docker compose run --rm --no-deps \
     {{{{appKey}}}}-cli \
     sh -c "composer install && bun install && bun run build" && \
 ./cli start && \
+npx lefthook install && \
 sleep 10 && \
 ./cli artisan migrate && \
 ./cli stop
